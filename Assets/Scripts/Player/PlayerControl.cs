@@ -39,7 +39,6 @@ public class PlayerControl : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        mainCamera = Camera.main;
 
         // Start with Left-0, Right-1, Down-0, Up-1 
         maxLeft = mainCamera.ViewportToWorldPoint(new Vector2(0.12f, 0)).x;
@@ -82,16 +81,7 @@ public class PlayerControl : MonoBehaviour
         transform.position = new Vector3(Mathf.Clamp(transform.position.x, maxLeft, maxRight), Mathf.Clamp(transform.position.y, maxDown, maxUp), 0);
     }
 
-    private void HandleTouchMovement()
-    {
-        if (Touch.fingers[0].isActive)
-        {
-            Touch myTouch = Touch.activeTouches[0];
-            Vector3 screenPos = myTouch.screenPosition;
-            Vector3 WorldLoc = mainCamera.ScreenToWorldPoint(screenPos);
 
-            transform.position = new Vector3(WorldLoc.x, WorldLoc.y, 0);
-        }
     }
 
     private void HandleTouchMovementWithOffset()
