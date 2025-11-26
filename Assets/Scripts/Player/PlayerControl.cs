@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
-using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
 //using TouchPhase = UnityEngine.InputSystem.EnhancedTouch;
 using TouchPhase = UnityEngine.InputSystem.TouchPhase;
-
 
 /* Screen Touch locations
     ┌───────────────────────┐
@@ -15,6 +13,13 @@ using TouchPhase = UnityEngine.InputSystem.TouchPhase;
     └───────────────────────┘
 */
 
+enum PlayerControllerType
+{
+    Touch,
+    TouchWithOffset,
+    Joystick
+}
+
 public class PlayerControl : MonoBehaviour
 {
     private Camera mainCamera;
@@ -24,6 +29,12 @@ public class PlayerControl : MonoBehaviour
     private float maxRight;
     private float maxUp;
     private float maxDown;
+
+    [SerializeField] PlayerControllerType playerTouchType;
+
+    [Header("Joystick")]
+    public Joystick joyStick;
+    [SerializeField] float speed;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -39,6 +50,51 @@ public class PlayerControl : MonoBehaviour
 
     // Update is called once per frame
     void Update()
+    {
+        switch (playerTouchType)
+        {
+            case PlayerControllerType.Touch:
+                HandleTouchMovement();
+                break;
+            case PlayerControllerType.TouchWithOffset:
+                HandleTouchMovementWithOffset();
+                break;
+            case PlayerControllerType.Joystick:
+                HandleJoytickMovement();
+                break;
+        }
+    }
+
+    void HandleJoytickMovement()
+    {
+        if (joyStick != null)
+        {
+            float x = joyStick.Direction.x;
+            float y = joyStick.Direction.y;
+
+            if (x != 0 || y != 0)
+            {
+                Vector3 dir = new Vector3(x, y, 0);
+                transform.position += dir * speed * Time.deltaTime;
+            }
+        }
+
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, maxLeft, maxRight), Mathf.Clamp(transform.position.y, maxDown, maxUp), 0);
+    }
+
+    private void HandleTouchMovement()
+    {
+        if (Touch.fingers[0].isActive)
+        {
+            Touch myTouch = Touch.activeTouches[0];
+            Vector3 screenPos = myTouch.screenPosition;
+            Vector3 WorldLoc = mainCamera.ScreenToWorldPoint(screenPos);
+
+            transform.position = new Vector3(WorldLoc.x, WorldLoc.y, 0);
+        }
+    }
+
+    private void HandleTouchMovementWithOffset()
     {
         //if (Touch.activeTouches.Count > 0)
 
@@ -61,8 +117,8 @@ public class PlayerControl : MonoBehaviour
                 transform.position = new Vector3(WorldLoc.x - offset.x, WorldLoc.y - offset.y, 0);
             }
 
-            transform.position = new Vector3(Mathf.Clamp(transform.position.x, maxLeft, maxRight), 
-                Mathf.Clamp(transform.position.y, maxDown, maxUp),0);
+            transform.position = new Vector3(Mathf.Clamp(transform.position.x, maxLeft, maxRight),
+                Mathf.Clamp(transform.position.y, maxDown, maxUp), 0);
         }
     }
 }
